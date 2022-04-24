@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Globalization;
 
 namespace Oxide.Plugins
 {
@@ -34,19 +35,7 @@ namespace Oxide.Plugins
 
             foreach (var monumentInfo in TerrainMeta.Path.Monuments)
             {
-                if (_pluginConfig.DisallowedMonumentTypes.Contains(monumentInfo.Type))
-                    continue;
-
-                if (!_pluginConfig.AllowsMonumentTier(monumentInfo.Tier))
-                    continue;
-
-                var monumentName = monumentInfo.name;
-                if (monumentName.Contains("monument_marker.prefab"))
-                {
-                    monumentName = monumentInfo.transform.root.name;
-                }
-
-                if (!_pluginConfig.AllowsMonumentName(monumentInfo.name))
+                if (!_pluginConfig.AllowsMonument(monumentInfo))
                     continue;
 
                 _eligiblePatrolPoints.Add(monumentInfo.transform.position);
@@ -182,6 +171,9 @@ namespace Oxide.Plugins
             [JsonProperty("Disallowed monument prefabs (partial match)")]
             private string[] DisallowedMonumentPrefabs = new string[0];
 
+            [JsonProperty("Force allow monument prefabs (partial match)")]
+            private string[] ForceAllowedMonumentPrefabs = new string[0];
+
             public void Init(BetterChinookPath pluginInstance)
             {
                 if (DisallowedMonumentTypesNames != null)
@@ -217,24 +209,43 @@ namespace Oxide.Plugins
                 }
             }
 
-            public bool AllowsMonumentTier(MonumentTier monumentTier)
+            public bool AllowsMonument(MonumentInfo monumentInfo)
             {
-                return (DisallowedMonumentTiersMask & monumentTier) == 0;
-            }
-
-            public bool AllowsMonumentName(string monumentName)
-            {
-                if (DisallowedMonumentPrefabs == null)
-                    return true;
-
-                foreach (var disallowedPrefab in DisallowedMonumentPrefabs)
+                var monumentName = monumentInfo.name;
+                if (monumentName.Contains("monument_marker.prefab"))
                 {
-                    if (string.IsNullOrWhiteSpace(disallowedPrefab))
-                        continue;
-
-                    if (monumentName.Contains(disallowedPrefab, System.Globalization.CompareOptions.IgnoreCase))
-                        return false;
+                    monumentName = monumentInfo.transform.root.name;
                 }
+
+                if (ForceAllowedMonumentPrefabs != null)
+                {
+                    foreach (var allowedPartialPrefab in ForceAllowedMonumentPrefabs)
+                    {
+                        if (string.IsNullOrWhiteSpace(allowedPartialPrefab))
+                            continue;
+
+                        if (monumentName.Contains(allowedPartialPrefab, CompareOptions.IgnoreCase))
+                            return true;
+                    }
+                }
+
+                if (DisallowedMonumentPrefabs != null)
+                {
+                    foreach (var allowedPartialPrefab in DisallowedMonumentPrefabs)
+                    {
+                        if (string.IsNullOrWhiteSpace(allowedPartialPrefab))
+                            continue;
+
+                        if (monumentName.Contains(allowedPartialPrefab, CompareOptions.IgnoreCase))
+                            return false;
+                    }
+                }
+
+                if ((DisallowedMonumentTiersMask & monumentInfo.Tier) != 0)
+                    return false;
+
+                if (DisallowedMonumentTypes.Contains(monumentInfo.Type))
+                    return false;
 
                 return true;
             }

@@ -3,6 +3,7 @@
 - Properly randomizes the order in which chinooks visit monuments
 - Allows customizing which monuments chinooks will visit
 - Allows increasing the number of crates that each chinook will drop
+- Support custom monuments (monument markers)
 
 ## Configuration
 
@@ -17,7 +18,8 @@
   "Disallowed monument tiers": [
     "Tier0"
   ],
-  "Disallowed monument prefabs (partial match)": []
+  "Disallowed monument prefabs (partial match)": [],
+  "Force allow monument prefabs (partial match)": []
 }
 ```
 
@@ -25,7 +27,8 @@
 - `Max crate drops per chinook` -- The maximum number of crates that each chinook can drop.
 - `Disallowed monument types` -- Chinooks will never visit monuments with these types. Allowed values: `Cave`, `Airport`, `Building`, `Town`, `Radtown`, `Lighthouse`, `WaterWell`, `Roadside`, `Mountain`, `Lake`.
 - `Disallowed monument tiers` -- Chinooks will never visit monuments with these tiers. Allowed values: `Tier0`, `Tier1`, `Tier2`.
-- `Disallowed monument prefabs (partial match)` -- Chinooks will never visit monuments whose prefab name contains any of these keywords.
+- `Disallowed monument prefabs (partial match)` -- Chinooks will never visit monuments whose prefab name (or monument marker name) contains any of these keywords.
+- `Force allow monument prefabs (partial match)` -- Chinooks may visit monuments whose prefab name (or monument marker name) contains any of these keywords, even if the monument would be disallowed by other settings.
 
 ## FAQ
 
