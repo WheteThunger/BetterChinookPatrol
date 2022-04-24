@@ -40,6 +40,12 @@ namespace Oxide.Plugins
                 if (!_pluginConfig.AllowsMonumentTier(monumentInfo.Tier))
                     continue;
 
+                var monumentName = monumentInfo.name;
+                if (monumentName.Contains("monument_marker.prefab"))
+                {
+                    monumentName = monumentInfo.transform.root.name;
+                }
+
                 if (!_pluginConfig.AllowsMonumentName(monumentInfo.name))
                     continue;
 
