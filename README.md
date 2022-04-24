@@ -51,7 +51,7 @@ Map developers can create additional drop zones using the `assets/bundled/prefab
 ## Developer Hooks
 
 ```cs
-object OnBetterChinookPath(CH47HelicopterAIController chinook)
+object OnBetterChinookPatrol(CH47HelicopterAIController chinook)
 ```
 
 - Called when this plugin wants to affect a chinook

@@ -11,9 +11,9 @@ using System.Globalization;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chinook Path", "WhiteThunder", "0.1.0")]
+    [Info("Better Chinook Patrol", "WhiteThunder", "0.1.0")]
     [Description("Properly randomizes the order in which chinooks visit monuments.")]
-    internal class BetterChinookPath : CovalencePlugin
+    internal class BetterChinookPatrol : CovalencePlugin
     {
         #region Fields
 
@@ -105,7 +105,7 @@ namespace Oxide.Plugins
 
         private bool ChinookWasBlocked(CH47HelicopterAIController ch47)
         {
-            var result = Interface.CallHook("OnBetterChinookPath", ch47);
+            var result = Interface.CallHook("OnBetterChinookPatrol", ch47);
             return result is bool && (bool)result == false;
         }
 
@@ -193,7 +193,7 @@ namespace Oxide.Plugins
             [JsonProperty("Force allow monument prefabs (partial match)")]
             private string[] ForceAllowedMonumentPrefabs = new string[0];
 
-            public void Init(BetterChinookPath pluginInstance)
+            public void Init(BetterChinookPatrol pluginInstance)
             {
                 if (DisallowedMonumentTypesNames != null)
                 {
