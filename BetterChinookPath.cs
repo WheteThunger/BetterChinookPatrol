@@ -38,16 +38,18 @@ namespace Oxide.Plugins
 
             foreach (var monumentInfo in TerrainMeta.Path.Monuments)
             {
-                if (!_pluginConfig.AllowsMonument(monumentInfo))
+                string monumentName;
+                if (!_pluginConfig.AllowsMonument(monumentInfo, out monumentName))
                     continue;
 
-                _eligiblePatrolPoints.Add(monumentInfo.transform.position);
+                var monumentPosition = monumentInfo.transform.position;
+                _eligiblePatrolPoints.Add(monumentPosition);
 
                 var hasDropZone = false;
-                var closestDropZone = CH47DropZone.GetClosest(monumentInfo.transform.position);
+                var closestDropZone = CH47DropZone.GetClosest(monumentPosition);
                 if (closestDropZone != null)
                 {
-                    hasDropZone = Vector3Ex.Distance2D(closestDropZone.transform.position, monumentInfo.transform.position) < VanillaDropZoneDistanceTolerance;
+                    hasDropZone = Vector3Ex.Distance2D(closestDropZone.transform.position, monumentPosition) < VanillaDropZoneDistanceTolerance;
                 }
 
                 if (hasDropZone)
@@ -56,7 +58,7 @@ namespace Oxide.Plugins
                 }
 
                 var dropZoneInfo = hasDropZone ? " -- HAS DROP ZONE" : string.Empty;
-                sb.AppendLine($"- {monumentInfo.name}{dropZoneInfo}");
+                sb.AppendLine($"- {monumentName}{dropZoneInfo}");
             }
 
             Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks. {dropZoneCount} have drop zones.\n{sb}");
@@ -226,9 +228,9 @@ namespace Oxide.Plugins
                 }
             }
 
-            public bool AllowsMonument(MonumentInfo monumentInfo)
+            public bool AllowsMonument(MonumentInfo monumentInfo, out string monumentName)
             {
-                var monumentName = monumentInfo.name;
+                monumentName = monumentInfo.name;
                 if (monumentName.Contains("monument_marker.prefab"))
                 {
                     monumentName = monumentInfo.transform.root.name;
