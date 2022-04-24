@@ -17,6 +17,8 @@ namespace Oxide.Plugins
     {
         #region Fields
 
+        private const float VanillaDropZoneDistanceTolerance = 200;
+
         private Configuration _pluginConfig;
         private List<Vector3> _eligiblePatrolPoints = new List<Vector3>();
 
@@ -32,6 +34,7 @@ namespace Oxide.Plugins
         private void OnServerInitialized()
         {
             var sb = new StringBuilder();
+            var dropZoneCount = 0;
 
             foreach (var monumentInfo in TerrainMeta.Path.Monuments)
             {
@@ -39,10 +42,24 @@ namespace Oxide.Plugins
                     continue;
 
                 _eligiblePatrolPoints.Add(monumentInfo.transform.position);
-                sb.AppendLine($"- {monumentInfo.name}");
+
+                var hasDropZone = false;
+                var closestDropZone = CH47DropZone.GetClosest(monumentInfo.transform.position);
+                if (closestDropZone != null)
+                {
+                    hasDropZone = Vector3Ex.Distance2D(closestDropZone.transform.position, monumentInfo.transform.position) < VanillaDropZoneDistanceTolerance;
+                }
+
+                if (hasDropZone)
+                {
+                    dropZoneCount++;
+                }
+
+                var dropZoneInfo = hasDropZone ? " -- HAS DROP ZONE" : string.Empty;
+                sb.AppendLine($"- {monumentInfo.name}{dropZoneInfo}");
             }
 
-            Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks.\n{sb}");
+            Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks. {dropZoneCount} have drop zones.\n{sb}");
         }
 
         private void OnEntitySpawned(CH47HelicopterAIController ch47)
