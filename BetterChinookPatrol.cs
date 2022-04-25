@@ -219,7 +219,7 @@ namespace Oxide.Plugins
                     foreach (var monumentTypeName in DisallowedMonumentTypesNames)
                     {
                         MonumentType monumentType;
-                        if (Enum.TryParse<MonumentType>(monumentTypeName, out monumentType))
+                        if (Enum.TryParse<MonumentType>(monumentTypeName, ignoreCase: true, result: out monumentType))
                         {
                             DisallowedMonumentTypes.Add(monumentType);
                         }
@@ -235,7 +235,7 @@ namespace Oxide.Plugins
                     foreach (var monumentTierName in DisallowedMonumentTierNames)
                     {
                         MonumentTier monumentTier;
-                        if (Enum.TryParse<MonumentTier>(monumentTierName, out monumentTier))
+                        if (Enum.TryParse<MonumentTier>(monumentTierName, ignoreCase: true, result: out monumentTier))
                         {
                             DisallowedMonumentTiersMask |= monumentTier;
                         }
