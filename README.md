@@ -19,7 +19,9 @@
     "Tier0"
   ],
   "Disallowed monument prefabs (partial match)": [],
-  "Force allow monument prefabs (partial match)": []
+  "Disallowed monument prefabs (exact match)": [],
+  "Force allow monument prefabs (partial match)": [],
+  "Force allow monument prefabs (exact match)": []
 }
 ```
 
@@ -28,7 +30,9 @@
 - `Disallowed monument types` -- Chinooks will never visit monuments with these types. Allowed values: `Cave`, `Airport`, `Building`, `Town`, `Radtown`, `Lighthouse`, `WaterWell`, `Roadside`, `Mountain`, `Lake`.
 - `Disallowed monument tiers` -- Chinooks will never visit monuments with these tiers. Allowed values: `Tier0`, `Tier1`, `Tier2`.
 - `Disallowed monument prefabs (partial match)` -- Chinooks will never visit monuments whose prefab name (or monument marker name) contains any of these keywords.
+- `Disallowed monument prefabs (exact match)` -- Chinooks will never visit monuments whose prefab name (or monument marker name) is an exact match for any of these values.
 - `Force allow monument prefabs (partial match)` -- Chinooks may visit monuments whose prefab name (or monument marker name) contains any of these keywords, even if the monument would be disallowed by other settings.
+- `Force allow monument prefabs (exact match)` -- Chinooks may visit monuments whose prefab name (or monument marker name) is an exact match of any of these values.
 
 ## FAQ
 

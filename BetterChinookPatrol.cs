@@ -111,6 +111,19 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region Helpers
+
+        private static class StringUtils
+        {
+            public static bool Equals(string a, string b) =>
+                string.Compare(a, b, StringComparison.OrdinalIgnoreCase) == 0;
+
+            public static bool Contains(string haystack, string needle) =>
+                haystack.Contains(needle, CompareOptions.IgnoreCase);
+        }
+
+        #endregion
+
         #region Pathfinder
 
         private class BetterCH47PathFinder : CH47PathFinder
@@ -188,10 +201,16 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty("Disallowed monument prefabs (partial match)")]
-            private string[] DisallowedMonumentPrefabs = new string[0];
+            private string[] DisallowedMonumentPartialPrefabs = new string[0];
+
+            [JsonProperty("Disallowed monument prefabs (exact match)")]
+            private string[] DisallowedMonumentExactPrefabs = new string[0];
 
             [JsonProperty("Force allow monument prefabs (partial match)")]
-            private string[] ForceAllowedMonumentPrefabs = new string[0];
+            private string[] ForceAllowedMonumentPartialPrefabs = new string[0];
+
+            [JsonProperty("Force allow monument prefabs (exact match)")]
+            private string[] ForceAllowedMonumentExactPrefabs = new string[0];
 
             public void Init(BetterChinookPatrol pluginInstance)
             {
@@ -236,26 +255,38 @@ namespace Oxide.Plugins
                     monumentName = monumentInfo.transform.root.name;
                 }
 
-                if (ForceAllowedMonumentPrefabs != null)
+                if (ForceAllowedMonumentPartialPrefabs != null)
                 {
-                    foreach (var allowedPartialPrefab in ForceAllowedMonumentPrefabs)
+                    foreach (var partialPrefab in ForceAllowedMonumentPartialPrefabs)
                     {
-                        if (string.IsNullOrWhiteSpace(allowedPartialPrefab))
-                            continue;
-
-                        if (monumentName.Contains(allowedPartialPrefab, CompareOptions.IgnoreCase))
+                        if (!string.IsNullOrWhiteSpace(partialPrefab) && StringUtils.Contains(monumentName, partialPrefab))
                             return true;
                     }
                 }
 
-                if (DisallowedMonumentPrefabs != null)
+                if (ForceAllowedMonumentExactPrefabs != null)
                 {
-                    foreach (var allowedPartialPrefab in DisallowedMonumentPrefabs)
+                    foreach (var exactPrefab in ForceAllowedMonumentExactPrefabs)
                     {
-                        if (string.IsNullOrWhiteSpace(allowedPartialPrefab))
-                            continue;
+                        if (!string.IsNullOrWhiteSpace(exactPrefab) && StringUtils.Equals(monumentName, exactPrefab))
+                            return true;
+                    }
+                }
 
-                        if (monumentName.Contains(allowedPartialPrefab, CompareOptions.IgnoreCase))
+                if (DisallowedMonumentPartialPrefabs != null)
+                {
+                    foreach (var partialPrefab in DisallowedMonumentPartialPrefabs)
+                    {
+                        if (!string.IsNullOrWhiteSpace(partialPrefab) && StringUtils.Contains(monumentName, partialPrefab))
+                            return false;
+                    }
+                }
+
+                if (DisallowedMonumentExactPrefabs != null)
+                {
+                    foreach (var partialPrefab in DisallowedMonumentExactPrefabs)
+                    {
+                        if (!string.IsNullOrWhiteSpace(partialPrefab) && StringUtils.Equals(monumentName, partialPrefab))
                             return false;
                     }
                 }
