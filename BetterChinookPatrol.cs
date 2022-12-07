@@ -11,7 +11,7 @@ using System.Globalization;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chinook Patrol", "WhiteThunder", "0.1.0")]
+    [Info("Better Chinook Patrol", "WhiteThunder", "0.1.1")]
     [Description("Properly randomizes the order in which chinooks visit monuments.")]
     internal class BetterChinookPatrol : CovalencePlugin
     {
@@ -38,6 +38,9 @@ namespace Oxide.Plugins
 
             foreach (var monumentInfo in TerrainMeta.Path.Monuments)
             {
+                if (monumentInfo.IsSafeZone)
+                    continue;
+
                 string monumentName;
                 if (!_pluginConfig.AllowsMonument(monumentInfo, out monumentName))
                     continue;
