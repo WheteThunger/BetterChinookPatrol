@@ -73,6 +73,9 @@ namespace Oxide.Plugins
             if (ch47.ShouldLand())
                 return;
 
+            if (_eligiblePatrolPoints.Count < 1)
+                return;
+
             var brain = ch47.GetComponent<CH47AIBrain>();
             if (brain == null)
                 return;
