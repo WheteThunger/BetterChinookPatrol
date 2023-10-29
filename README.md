@@ -50,7 +50,7 @@ Chinooks will drop crates at monuments that have a drop zone. The following vani
 - Airfield
 - Dome
 
-Map developers can create additional drop zones using the `assets/bundled/prefabs/modding/dropzone.prefab`. Also, the plugin Monument Addons will soon allow creating additional drop zones in monuments.
+Map developers can create additional drop zones using the `assets/bundled/prefabs/modding/dropzone.prefab`. The [Monument Addons](https://umod.org/plugins/monument-addons) plugin also allows creating additional drop zones in monuments via the `maprefab dropzone` command.
 
 ## Developer Hooks
 
