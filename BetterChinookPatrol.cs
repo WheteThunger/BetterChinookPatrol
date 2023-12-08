@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Oxide.Core;
 using System;
 using System.Collections.Generic;
@@ -11,15 +10,15 @@ using System.Globalization;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chinook Patrol", "WhiteThunder", "0.1.1")]
-    [Description("Properly randomizes the order in which chinooks visit monuments.")]
+    [Info("Better Chinook Patrol", "WhiteThunder", "0.2.0")]
+    [Description("Allows customizing which monuments chinooks will visit.")]
     internal class BetterChinookPatrol : CovalencePlugin
     {
         #region Fields
 
         private const float VanillaDropZoneDistanceTolerance = 200;
 
-        private Configuration _pluginConfig;
+        private Configuration _config;
         private List<Vector3> _eligiblePatrolPoints = new List<Vector3>();
 
         #endregion
@@ -28,7 +27,7 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            _pluginConfig.Init(this);
+            _config.Init(this);
         }
 
         private void OnServerInitialized()
@@ -38,11 +37,11 @@ namespace Oxide.Plugins
 
             foreach (var monumentInfo in TerrainMeta.Path.Monuments)
             {
-                if (monumentInfo.IsSafeZone)
+                if (_config.DisallowSafeZoneMonuments && monumentInfo.IsSafeZone)
                     continue;
 
                 string monumentName;
-                if (!_pluginConfig.AllowsMonument(monumentInfo, out monumentName))
+                if (!_config.AllowsMonument(monumentInfo, out monumentName))
                     continue;
 
                 var monumentPosition = monumentInfo.transform.position;
@@ -95,9 +94,9 @@ namespace Oxide.Plugins
                     brain.mainInterestPoint = brain.PathFinder.GetRandomPatrolPoint();
                 }
 
-                if (_pluginConfig.MinCrateDropsPerChinook > 1 && _pluginConfig.MaxCrateDropsPerChinook > 1)
+                if (_config.MinCrateDropsPerChinook > 1 && _config.MaxCrateDropsPerChinook > 1)
                 {
-                    ch47.numCrates = UnityEngine.Random.Range(_pluginConfig.MinCrateDropsPerChinook, _pluginConfig.MaxCrateDropsPerChinook + 1);
+                    ch47.numCrates = UnityEngine.Random.Range(_config.MinCrateDropsPerChinook, _config.MaxCrateDropsPerChinook + 1);
                 }
             });
         }
@@ -133,8 +132,8 @@ namespace Oxide.Plugins
         {
             private const float RevisitMaxProximity = 100;
 
-            public List<Vector3> _patrolPath = new List<Vector3>();
-            private int _patrolPathIndex = 0;
+            public List<Vector3> _patrolPath;
+            private int _patrolPathIndex;
 
             public BetterCH47PathFinder(List<Vector3> eligiblePatrolPoints)
             {
@@ -158,9 +157,7 @@ namespace Oxide.Plugins
             public override Vector3 GetRandomPatrolPoint()
             {
                 if (_patrolPath.Count == 0)
-                {
                     return Vector3.zero;
-                }
 
                 if (_patrolPathIndex >= _patrolPath.Count)
                 {
@@ -190,30 +187,33 @@ namespace Oxide.Plugins
             [JsonProperty("Max crate drops per chinook")]
             public int MaxCrateDropsPerChinook = 1;
 
+            [JsonProperty("Disallow safe zone monuments")]
+            public bool DisallowSafeZoneMonuments = true;
+
             [JsonProperty("Disallowed monument types")]
-            private string[] DisallowedMonumentTypesNames = new string[]
+            private string[] DisallowedMonumentTypesNames =
             {
                 "Cave",
                 "WaterWell",
             };
 
             [JsonProperty("Disallowed monument tiers")]
-            private string[] DisallowedMonumentTierNames = new string[]
+            private string[] DisallowedMonumentTierNames =
             {
                 "Tier0"
             };
 
             [JsonProperty("Disallowed monument prefabs (partial match)")]
-            private string[] DisallowedMonumentPartialPrefabs = new string[0];
+            private string[] DisallowedMonumentPartialPrefabs = Array.Empty<string>();
 
             [JsonProperty("Disallowed monument prefabs (exact match)")]
-            private string[] DisallowedMonumentExactPrefabs = new string[0];
+            private string[] DisallowedMonumentExactPrefabs = Array.Empty<string>();
 
             [JsonProperty("Force allow monument prefabs (partial match)")]
-            private string[] ForceAllowedMonumentPartialPrefabs = new string[0];
+            private string[] ForceAllowedMonumentPartialPrefabs = Array.Empty<string>();
 
             [JsonProperty("Force allow monument prefabs (exact match)")]
-            private string[] ForceAllowedMonumentExactPrefabs = new string[0];
+            private string[] ForceAllowedMonumentExactPrefabs = Array.Empty<string>();
 
             public void Init(BetterChinookPatrol pluginInstance)
             {
@@ -222,7 +222,7 @@ namespace Oxide.Plugins
                     foreach (var monumentTypeName in DisallowedMonumentTypesNames)
                     {
                         MonumentType monumentType;
-                        if (Enum.TryParse<MonumentType>(monumentTypeName, ignoreCase: true, result: out monumentType))
+                        if (Enum.TryParse(monumentTypeName, ignoreCase: true, result: out monumentType))
                         {
                             DisallowedMonumentTypes.Add(monumentType);
                         }
@@ -238,7 +238,7 @@ namespace Oxide.Plugins
                     foreach (var monumentTierName in DisallowedMonumentTierNames)
                     {
                         MonumentTier monumentTier;
-                        if (Enum.TryParse<MonumentTier>(monumentTierName, ignoreCase: true, result: out monumentTier))
+                        if (Enum.TryParse(monumentTierName, ignoreCase: true, result: out monumentTier))
                         {
                             DisallowedMonumentTiersMask |= monumentTier;
                         }
@@ -306,7 +306,7 @@ namespace Oxide.Plugins
 
         private Configuration GetDefaultConfig() => new Configuration();
 
-        #region Configuration Boilerplate
+        #region Configuration Helpers
 
         private class SerializableConfiguration
         {
@@ -377,20 +377,20 @@ namespace Oxide.Plugins
             return changed;
         }
 
-        protected override void LoadDefaultConfig() => _pluginConfig = GetDefaultConfig();
+        protected override void LoadDefaultConfig() => _config = GetDefaultConfig();
 
         protected override void LoadConfig()
         {
             base.LoadConfig();
             try
             {
-                _pluginConfig = Config.ReadObject<Configuration>();
-                if (_pluginConfig == null)
+                _config = Config.ReadObject<Configuration>();
+                if (_config == null)
                 {
                     throw new JsonException();
                 }
 
-                if (MaybeUpdateConfig(_pluginConfig))
+                if (MaybeUpdateConfig(_config))
                 {
                     LogWarning("Configuration appears to be outdated; updating and saving");
                     SaveConfig();
@@ -407,7 +407,7 @@ namespace Oxide.Plugins
         protected override void SaveConfig()
         {
             Log($"Configuration changes saved to {Name}.json");
-            Config.WriteObject(_pluginConfig, true);
+            Config.WriteObject(_config, true);
         }
 
         #endregion

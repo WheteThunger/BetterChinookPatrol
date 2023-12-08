@@ -11,6 +11,7 @@
 {
   "Min crate drops per chinook": 1,
   "Max crate drops per chinook": 1,
+  "Disallow safe zone monuments": true,
   "Disallowed monument types": [
     "Cave",
     "WaterWell"
@@ -27,6 +28,7 @@
 
 - `Min crate drops per chinook` -- The minimum number of crates that each chinook can drop.
 - `Max crate drops per chinook` -- The maximum number of crates that each chinook can drop.
+- `Disallow safe zone monuments` (`true` or `false`) -- While `true`, chinooks will never visit safe zone monuments (e.g., outpost, bandit camp, fishing villages), same as vanilla behavior. While `false`, chinooks may visit safe zone monuments, depending on the other configuration options. Disabling this may make sense for hardcore servers.
 - `Disallowed monument types` -- Chinooks will never visit monuments with these types. Allowed values: `Cave`, `Airport`, `Building`, `Town`, `Radtown`, `Lighthouse`, `WaterWell`, `Roadside`, `Mountain`, `Lake`.
 - `Disallowed monument tiers` -- Chinooks will never visit monuments with these tiers. Allowed values: `Tier0`, `Tier1`, `Tier2`.
 - `Disallowed monument prefabs (partial match)` -- Chinooks will never visit monuments whose prefab name (or monument marker name) contains any of these keywords.
