@@ -19,7 +19,7 @@ namespace Oxide.Plugins
         private const float VanillaDropZoneDistanceTolerance = 200;
 
         private Configuration _config;
-        private List<Vector3> _eligiblePatrolPoints = new List<Vector3>();
+        private List<Vector3> _eligiblePatrolPoints = new();
 
         #endregion
 
@@ -48,8 +48,7 @@ namespace Oxide.Plugins
             NextTick(() =>
             {
                 // If the brain doesn't have a path finder, perhaps another plugin is controlling it.
-                var pathFinder = brain.PathFinder as CH47PathFinder;
-                if (pathFinder == null)
+                if (brain.PathFinder is not CH47PathFinder pathFinder)
                     return;
 
                 if (ChinookWasBlocked(ch47))
@@ -58,7 +57,7 @@ namespace Oxide.Plugins
                 brain.PathFinder = new BetterCH47PathFinder(_eligiblePatrolPoints);
 
                 // If the chinook is already in a patrol state, its interest point must be updated.
-                if (brain.CurrentState != null && brain.CurrentState.StateType == AIState.Patrol)
+                if (brain.CurrentState is { StateType: AIState.Patrol })
                 {
                     brain.mainInterestPoint = brain.PathFinder.GetRandomPatrolPoint();
                 }
@@ -84,8 +83,7 @@ namespace Oxide.Plugins
 
         private bool ChinookWasBlocked(CH47HelicopterAIController ch47)
         {
-            var result = Interface.CallHook("OnBetterChinookPatrol", ch47);
-            return result is bool && (bool)result == false;
+            return Interface.CallHook("OnBetterChinookPatrol", ch47) is false;
         }
 
         #endregion
@@ -94,11 +92,15 @@ namespace Oxide.Plugins
 
         private static class StringUtils
         {
-            public static bool Equals(string a, string b) =>
-                string.Compare(a, b, StringComparison.OrdinalIgnoreCase) == 0;
+            public static bool Equals(string a, string b)
+            {
+                return string.Compare(a, b, StringComparison.OrdinalIgnoreCase) == 0;
+            }
 
-            public static bool Contains(string haystack, string needle) =>
-                haystack.Contains(needle, CompareOptions.IgnoreCase);
+            public static bool Contains(string haystack, string needle)
+            {
+                return haystack.Contains(needle, CompareOptions.IgnoreCase);
+            }
         }
 
         private void PrintDropZones()
@@ -111,8 +113,7 @@ namespace Oxide.Plugins
                 if (_config.DisallowSafeZoneMonuments && monumentInfo.IsSafeZone)
                     continue;
 
-                string monumentName;
-                if (!_config.AllowsMonument(monumentInfo, out monumentName))
+                if (!_config.AllowsMonument(monumentInfo, out var monumentName))
                     continue;
 
                 var monumentPosition = monumentInfo.transform.position;
@@ -189,7 +190,7 @@ namespace Oxide.Plugins
         private class Configuration : SerializableConfiguration
         {
             [JsonIgnore]
-            public List<MonumentType> DisallowedMonumentTypes = new List<MonumentType>();
+            public List<MonumentType> DisallowedMonumentTypes = new();
 
             [JsonIgnore]
             public MonumentTier DisallowedMonumentTiersMask;
@@ -234,8 +235,7 @@ namespace Oxide.Plugins
                 {
                     foreach (var monumentTypeName in DisallowedMonumentTypesNames)
                     {
-                        MonumentType monumentType;
-                        if (Enum.TryParse(monumentTypeName, ignoreCase: true, result: out monumentType))
+                        if (Enum.TryParse(monumentTypeName, ignoreCase: true, result: out MonumentType monumentType))
                         {
                             DisallowedMonumentTypes.Add(monumentType);
                         }
@@ -250,8 +250,7 @@ namespace Oxide.Plugins
                 {
                     foreach (var monumentTierName in DisallowedMonumentTierNames)
                     {
-                        MonumentTier monumentTier;
-                        if (Enum.TryParse(monumentTierName, ignoreCase: true, result: out monumentTier))
+                        if (Enum.TryParse(monumentTierName, ignoreCase: true, result: out MonumentTier monumentTier))
                         {
                             DisallowedMonumentTiersMask |= monumentTier;
                         }
@@ -317,7 +316,7 @@ namespace Oxide.Plugins
             }
         }
 
-        private Configuration GetDefaultConfig() => new Configuration();
+        private Configuration GetDefaultConfig() => new();
 
         #region Configuration Helpers
 
@@ -363,13 +362,11 @@ namespace Oxide.Plugins
 
             foreach (var key in currentWithDefaults.Keys)
             {
-                object currentRawValue;
-                if (currentRaw.TryGetValue(key, out currentRawValue))
+                if (currentRaw.TryGetValue(key, out var currentRawValue))
                 {
-                    var defaultDictValue = currentWithDefaults[key] as Dictionary<string, object>;
                     var currentDictValue = currentRawValue as Dictionary<string, object>;
 
-                    if (defaultDictValue != null)
+                    if (currentWithDefaults[key] is Dictionary<string, object> defaultDictValue)
                     {
                         if (currentDictValue == null)
                         {
@@ -377,7 +374,9 @@ namespace Oxide.Plugins
                             changed = true;
                         }
                         else if (MaybeUpdateConfigDict(defaultDictValue, currentDictValue))
+                        {
                             changed = true;
+                        }
                     }
                 }
                 else
@@ -399,9 +398,7 @@ namespace Oxide.Plugins
             {
                 _config = Config.ReadObject<Configuration>();
                 if (_config == null)
-                {
                     throw new JsonException();
-                }
 
                 if (MaybeUpdateConfig(_config))
                 {
