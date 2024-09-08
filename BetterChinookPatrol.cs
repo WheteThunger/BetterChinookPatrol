@@ -32,38 +32,7 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
-            var sb = new StringBuilder();
-            var dropZoneCount = 0;
-
-            foreach (var monumentInfo in TerrainMeta.Path.Monuments)
-            {
-                if (_config.DisallowSafeZoneMonuments && monumentInfo.IsSafeZone)
-                    continue;
-
-                string monumentName;
-                if (!_config.AllowsMonument(monumentInfo, out monumentName))
-                    continue;
-
-                var monumentPosition = monumentInfo.transform.position;
-                _eligiblePatrolPoints.Add(monumentPosition);
-
-                var hasDropZone = false;
-                var closestDropZone = CH47DropZone.GetClosest(monumentPosition);
-                if (closestDropZone != null)
-                {
-                    hasDropZone = Vector3Ex.Distance2D(closestDropZone.transform.position, monumentPosition) < VanillaDropZoneDistanceTolerance;
-                }
-
-                if (hasDropZone)
-                {
-                    dropZoneCount++;
-                }
-
-                var dropZoneInfo = hasDropZone ? " -- HAS DROP ZONE" : string.Empty;
-                sb.AppendLine($"- {monumentName}{dropZoneInfo}");
-            }
-
-            Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks. {dropZoneCount} have drop zones.\n{sb}");
+            PrintDropZones();
         }
 
         private void OnEntitySpawned(CH47HelicopterAIController ch47)
@@ -101,6 +70,14 @@ namespace Oxide.Plugins
             });
         }
 
+        private void OnMonumentPrefabCreated(GameObject gameObject, Component monument, Guid guid)
+        {
+            if (gameObject.HasComponent<CH47DropZone>())
+            {
+                Log($"Detected new Monument Addons drop zone at {gameObject.transform.position}");
+            }
+        }
+
         #endregion
 
         #region Exposed Hooks
@@ -122,6 +99,42 @@ namespace Oxide.Plugins
 
             public static bool Contains(string haystack, string needle) =>
                 haystack.Contains(needle, CompareOptions.IgnoreCase);
+        }
+
+        private void PrintDropZones()
+        {
+            var sb = new StringBuilder();
+            var dropZoneCount = 0;
+
+            foreach (var monumentInfo in TerrainMeta.Path.Monuments)
+            {
+                if (_config.DisallowSafeZoneMonuments && monumentInfo.IsSafeZone)
+                    continue;
+
+                string monumentName;
+                if (!_config.AllowsMonument(monumentInfo, out monumentName))
+                    continue;
+
+                var monumentPosition = monumentInfo.transform.position;
+                _eligiblePatrolPoints.Add(monumentPosition);
+
+                var hasDropZone = false;
+                var closestDropZone = CH47DropZone.GetClosest(monumentPosition);
+                if (closestDropZone != null)
+                {
+                    hasDropZone = Vector3Ex.Distance2D(closestDropZone.transform.position, monumentPosition) < VanillaDropZoneDistanceTolerance;
+                }
+
+                if (hasDropZone)
+                {
+                    dropZoneCount++;
+                }
+
+                var dropZoneInfo = hasDropZone ? " -- HAS DROP ZONE" : string.Empty;
+                sb.AppendLine($"- {monumentName}{dropZoneInfo}");
+            }
+
+            Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks. {dropZoneCount} have drop zones.\n{sb}");
         }
 
         #endregion
