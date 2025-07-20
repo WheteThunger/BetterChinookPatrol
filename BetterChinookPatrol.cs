@@ -10,7 +10,7 @@ using System.Globalization;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chinook Patrol", "WhiteThunder", "0.2.0")]
+    [Info("Better Chinook Patrol", "WhiteThunder", "0.2.1")]
     [Description("Allows customizing which monuments chinooks will visit.")]
     internal class BetterChinookPatrol : CovalencePlugin
     {
