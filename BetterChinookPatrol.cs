@@ -135,7 +135,7 @@ namespace Oxide.Plugins
                 sb.AppendLine($"- {monumentName}{dropZoneInfo}");
             }
 
-            Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks. {dropZoneCount} have drop zones.\n{sb}");
+            Log($"{_eligiblePatrolPoints.Count} monuments on this map may be visited by Chinooks. {dropZoneCount} have drop zones. This list may not show drop zones managed by other plugins (such as Monument Addons), particularly if the drop zones have not spawned yet.\n{sb}");
         }
 
         #endregion
